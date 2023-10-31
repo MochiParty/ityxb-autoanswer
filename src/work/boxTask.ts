@@ -13,6 +13,14 @@ abstract class Task implements BoxTask {
   getOptionItems(questionItem: QuestionItem): JQuery<HTMLElement> {
     return questionItem.optionBox.find(".question-option-item-box");
   }
+
+  public success(questionItem: QuestionItem) {
+    questionItem.title.append($("<span style='color: green;'>已完成</span>"));
+  }
+
+  public failure(questionItem: QuestionItem) {
+    questionItem.title.append($("<span style='color: red;'>出错啦</span>"));
+  }
 }
 
 class PanduanTask extends Task {
@@ -26,10 +34,50 @@ class PanduanTask extends Task {
       } else {
         answers[1].click();
       }
-      questionItem.title.append($("<span style='color: green;'>已完成</span>"));
+      this.success(questionItem);
     });
   }
 }
+
+class DanxuanTask extends Task {
+  doWork(questionItem: QuestionItem): void {
+    questionItem.getAnswer().then((result) => {
+      const ans = result[0][0];
+      let dom: JQuery<HTMLInputElement> = this.getOptionItems(questionItem).find(":contains('" + ans + "')").find("input");
+      dom[0].click();
+      this.success(questionItem);
+    }).catch((err) => {
+      this.failure(questionItem);
+      err.printStackTrace();
+      return err;
+    })
+  }
+}
+
+class DuoxuanTask extends Task {
+  doWork(questionItem: QuestionItem): void {
+    questionItem.getAnswer().then((result) => {
+      const ans = result[0];
+      const arr: number[] = [];
+      ans.forEach((item: string, index: number) => {
+        let dom = this.getOptionItems(questionItem).find(":contains('" + item + "')").find(".el-checkbox__input");
+        if (!dom.hasClass("is-checked")) {
+          dom.addClass("is-checked");
+        }
+        arr.push(index);
+      })
+      updateStudentAns(questionItem.dataId, arr.join(",")).then((res) => {
+        console.log(res);
+        this.success(questionItem);
+      })
+    }).catch((err) => {
+      this.failure(questionItem);
+      err.printStackTrace();
+    })
+  }
+
+}
+
 
 class TiankongTask extends Task {
   doWork(questionItem: QuestionItem): void {
@@ -44,16 +92,14 @@ class TiankongTask extends Task {
       } else {
         // console.log(questionItem.questionNum);
 
-        updateStudentAns(questionItem.title.attr("data-id"), answers).then(
+        updateStudentAns(questionItem.dataId, answers).then(
           (res) => {
             console.log(questionItem.title[0].innerText, " answer: " + result);
             const parse = JSON.parse(res.responseText);
             if (parse.success) {
               input.attr("value", answers[0]);
               // todo update right bar
-              questionItem.title.append(
-                $("<span style='color: green;'>已完成</span>")
-              );
+              this.success(questionItem);
             }
           }
         );
@@ -62,5 +108,5 @@ class TiankongTask extends Task {
   }
 }
 
-export { PanduanTask, TiankongTask };
+export { PanduanTask, TiankongTask, DanxuanTask, DuoxuanTask };
 export type { BoxTask };

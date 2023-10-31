@@ -85,7 +85,7 @@ async function search(data: any, status = true) {
   return res;
 }
 
-async function updateStudentAns(questionId: string | undefined, answer: Array<string>) {
+async function updateStudentAns(questionId: string | undefined, answer: any) {
   let formData = {
     busyworkId: getWorkBusyId(),
     busyworkQuestionId: questionId,

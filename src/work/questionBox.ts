@@ -1,5 +1,5 @@
 import { search } from "../serverApi";
-import { BoxTask,TiankongTask,PanduanTask } from "./boxTask";
+import { BoxTask,TiankongTask,PanduanTask, DanxuanTask, DuoxuanTask } from "./boxTask";
 
 enum BoxType {
   DANXUAN, // 单选
@@ -28,6 +28,15 @@ class QuestionBox {
       }
       case BoxType.TIANKONG: {
         this.task = new TiankongTask();
+        break
+      }
+      case BoxType.DANXUAN: {
+        this.task = new DanxuanTask();
+        break
+      }
+      case BoxType.DUOXUAN: {
+        this.task = new DuoxuanTask();
+        break;
       }
     }
   }
@@ -51,6 +60,10 @@ class QuestionItem {
     this.title = this.dom.find(".question-title-box");
     this.optionBox = this.dom.find(".question-option-box");
     this.questionNum = this.dom.find(".question-num");
+  }
+
+  public get dataId(): string {
+    return this.title.attr("data-id")!;
   }
 
   /**
